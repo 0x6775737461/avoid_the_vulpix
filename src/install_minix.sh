@@ -11,11 +11,16 @@ get_minix_iso() {
 
 	local minix_file_short_name="${minix_file/_version/}"
 
-	wget "${link}/${minix_file/version/${actual_version}}" \
-		-O "$minix_file_short_name" \
-		--quiet \
-		--tries=3 \
-		--show-progress
+	if [ -e "$minix_file_short_name" ]; then
+		echo "File exists!"
+
+	else
+		wget "${link}/${minix_file/version/${actual_version}}" \
+			-O "$minix_file_short_name" \
+			--quiet \
+			--tries=3 \
+			--show-progress
+	fi
 	
 	file_validation "$minix_file_short_name" "$md5_hash" \
 		&& return 0 || return 1
