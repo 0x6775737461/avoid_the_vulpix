@@ -35,11 +35,15 @@ file_validation() {
 	[ "$file_hash" = "$md5_hash" ] && return 0 || return 1
 }
 
-# create_img() {}
-# creating qemu img
+# creating qemu img and the vm (virtual machine)
+create_vm() {
+	# qemu disk image with 10 GigaBytes
+	qemu-img create minix.img 10G
 
-# minix 3 pre-installation, aka: first boot
-# pre_install() {}
+	# doing the system installation
+	qemu-system-x86_64 -net user -net nic -m 256 \
+		-cdrom minix.iso -hda minix.img -boot d
+}
 
 # mini 3 day2day use
 # start_minix3() {}
@@ -48,6 +52,21 @@ main() {
 	get_minix_iso
 	if [ $? = 0 ]; then
 		echo "File integrity is ok."
+
+		if [ -e 'minix.iso.bz2' ] && [ ! -e 'minix.iso' ]; then
+			bzip2 -dkp minix.iso.bz2
+		fi
+
+		local msg="""
+		\rBefore start the installation, remember that
+		\ryou must manually shut down the virtual machine!!!\n
+		\r[enter_to_continue]
+		"""
+
+		echo -e "$msg"
+		read -s
+
+		create_vm
 	else
 		echo "Something is wrong with this file"
 	fi
