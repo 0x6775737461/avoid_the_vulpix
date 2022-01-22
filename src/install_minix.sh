@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+source start_minix.sh
+
 # getting minix 3 iso file
 get_minix_iso() {
 	#TODO: another function to get this data dinamically
@@ -38,37 +40,44 @@ file_validation() {
 # creating qemu img and the vm (virtual machine)
 create_vm() {
 	# qemu disk image with 10 GigaBytes
-	qemu-img create minix.img 10G
+	if ! qemu-img info minix.img 2>&-; then
+		qemu-img create -f raw minix.img 10G
+	fi
 
-	# doing the system installation
-	qemu-system-x86_64 -net user -net nic -m 256 \
-		-cdrom minix.iso -hda minix.img -boot d
+	# this step is valid only on installation
+	start_vm -boot d -cdrom minix.iso
 }
 
-# mini 3 day2day use
-# start_minix3() {}
-
 main() {
-	get_minix_iso
-	if [ $? = 0 ]; then
-		echo "File integrity is ok."
+	#TODO: will every post-install act need this?
+	if [ "$1" = 'start' ]; then
+		start_vm
+		return 0
+	else
+		get_minix_iso
+		if [ $? = 0 ]; then
+			echo "File integrity is ok."
+	
+			if [ -e 'minix.iso.bz2' ] && [ ! -e 'minix.iso' ]; then
+				bzip2 -dkp minix.iso.bz2
+			fi
 
-		if [ -e 'minix.iso.bz2' ] && [ ! -e 'minix.iso' ]; then
-			bzip2 -dkp minix.iso.bz2
+			local msg="""
+			\rBefore start the installation, remember that
+			\ryou must manually shut down the virtual machine!!!
+			\r[enter_to_continue]
+			"""
+
+			echo -e "$msg"
+			read -s
+
+			create_vm
+		else
+			echo "Something is wrong with this file"
+			return 1
 		fi
 
-		local msg="""
-		\rBefore start the installation, remember that
-		\ryou must manually shut down the virtual machine!!!\n
-		\r[enter_to_continue]
-		"""
-
-		echo -e "$msg"
-		read -s
-
-		create_vm
-	else
-		echo "Something is wrong with this file"
+		return 0
 	fi
 }
 
