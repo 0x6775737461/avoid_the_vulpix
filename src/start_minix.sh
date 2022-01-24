@@ -9,7 +9,3 @@ start_vm() {
 		-drive file=minix.img,format=raw \
 		"$@"
 }
-
-if [ "$#" -eq 0 ]; then
-	start_vm
-fi
