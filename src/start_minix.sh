@@ -7,9 +7,6 @@ start_vm() {
 		-device virtio-net,netdev=vmnic \
 		-m 256 \
 		-drive file=minix.img,format=raw \
+		-monitor stdio \
 		"$@"
 }
-
-#TODO: this script will server for post-install
-# ex: ./start_vm
-
