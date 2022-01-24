@@ -10,6 +10,6 @@ start_vm() {
 		"$@"
 }
 
-#TODO: this script will server for post-install
-# ex: ./start_vm
-
+if [ "$#" -eq 0 ]; then
+	start_vm
+fi
